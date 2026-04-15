@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import Lenis from 'lenis';
 import './App.css';
-import avatarImg from './assets/avatar.png';
+
 import {
   Brain, Code, Globe, Server, Cloud, Cpu,
   Rocket, Mail, Send, FileText, MapPin,
@@ -13,23 +14,48 @@ import {
   Calendar, CheckCircle2, Play, Coffee
 } from 'lucide-react';
 
-/* Brand icons (removed from Lucide, custom SVGs) */
-function Github({ size = 24, color = 'currentColor', ...props }) {
+/* Brand icons – colorful filled SVGs with brand colors */
+function Github({ size = 24, ...props }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/>
-      <path d="M9 18c-4.51 2-5-2-7-2"/>
+    <svg width={size} height={size} viewBox="0 0 24 24" {...props}>
+      <path fill="#f0f0ff" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21.5c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0012 2z"/>
     </svg>
   );
 }
 
-function Linkedin({ size = 24, color = 'currentColor', ...props }) {
+function Linkedin({ size = 24, ...props }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
-      <rect width="4" height="12" x="2" y="9"/>
-      <circle cx="4" cy="4" r="2"/>
+    <svg width={size} height={size} viewBox="0 0 24 24" {...props}>
+      <path fill="#999999" d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
     </svg>
+  );
+}
+
+/* Tech badges — monochrome */
+const TECH_BRANDS = {
+  Python:    { text: 'Py' },
+  JavaScript:{ text: 'JS' },
+  PHP:       { text: 'P' },
+  HTML5:     { text: 'H5' },
+  CSS3:      { text: 'C3' },
+  'React Native': { text: 'R' },
+  MySQL:     { text: 'My' },
+  MongoDB:   { text: 'M' },
+  AWS:       { text: 'A' },
+  Docker:    { text: 'D' },
+  Git:       { text: 'G' },
+  GitHub:    { text: 'GH' },
+  LLMs:      { text: 'AI' },
+  RAG:       { text: 'R' },
+  LangChain: { text: 'LC' },
+  LangGraph: { text: 'LG' },
+  'AI APIs': { text: 'AP' },
+};
+
+function TechBadge({ name }) {
+  const b = TECH_BRANDS[name] || { text: name.slice(0, 2) };
+  return (
+    <span className="tech-badge">{b.text}</span>
   );
 }
 
@@ -50,21 +76,21 @@ const SKILLS = [
     category: 'Programming',
     Icon: Terminal,
     color: 'cyan',
-    dotColor: '#00d4ff',
+    dotColor: '#06d6a0',
     items: ['Python', 'JavaScript', 'PHP'],
   },
   {
     category: 'Frontend',
     Icon: Monitor,
     color: 'purple',
-    dotColor: '#a855f7',
+    dotColor: '#6366f1',
     items: ['HTML5', 'CSS3', 'React Native'],
   },
   {
     category: 'Backend & Database',
     Icon: Database,
     color: 'pink',
-    dotColor: '#f472b6',
+    dotColor: '#f43f5e',
     items: ['MySQL', 'MongoDB'],
   },
   {
@@ -282,7 +308,7 @@ function Particles({ count = 30 }) {
       speedX: (Math.random() - 0.5) * 0.4,
       speedY: (Math.random() - 0.5) * 0.4,
       opacity: Math.random() * 0.5 + 0.1,
-      hue: Math.random() > 0.5 ? 190 : 270, // cyan or purple
+      hue: 0, // grayscale white
     }));
 
     const handleMouse = (e) => {
@@ -319,7 +345,7 @@ function Particles({ count = 30 }) {
         // Draw
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${p.hue}, 100%, 65%, ${p.opacity})`;
+        ctx.fillStyle = `rgba(255, 255, 255, ${p.opacity})`;
         ctx.fill();
       });
 
@@ -331,7 +357,7 @@ function Particles({ count = 30 }) {
             ctx.beginPath();
             ctx.moveTo(a.x, a.y);
             ctx.lineTo(b.x, b.y);
-            ctx.strokeStyle = `hsla(200, 100%, 65%, ${0.06 * (1 - dist / 150)})`;
+            ctx.strokeStyle = `rgba(255, 255, 255, ${0.04 * (1 - dist / 150)})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }
@@ -469,9 +495,13 @@ function Navbar() {
     <>
       <nav className={`navbar${scrolled ? ' scrolled' : ''}`}>
         <div className="nav-logo" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-          <Terminal size={18} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }} />
-          <span>&lt;MS /&gt;</span>
+          <div className="logo-mark">
+            <span className="logo-mark-m">M</span>
+            <span className="logo-mark-s">S</span>
+          </div>
+          <span className="logo-text">Muthamizh<span className="logo-dot">.</span></span>
         </div>
+
         <ul className="nav-links">
           {NAV_LINKS.map((l) => (
             <li key={l.label}>
@@ -504,7 +534,7 @@ function Navbar() {
             {l.label}
           </a>
         ))}
-        <a href="#contact" onClick={() => setMenuOpen(false)} style={{ color: 'var(--accent-cyan)' }}>
+        <a href="#contact" onClick={() => setMenuOpen(false)} style={{ color: '#ffffff' }}>
           <Rocket size={14} style={{ verticalAlign: 'middle', marginRight: '6px' }} />
           Hire Me
         </a>
@@ -543,7 +573,7 @@ function Hero() {
           <div className="hero-content">
             <div className="hero-label">
               <span className="hero-label-dot" />
-              <CircleDot size={12} style={{ color: 'var(--accent-green)' }} />
+              <CircleDot size={12} style={{ color: '#cccccc' }} />
               Available for Opportunities
             </div>
             <h1 className="hero-name">
@@ -588,9 +618,9 @@ function Hero() {
 
           {/* Right – Avatar */}
           <div className="hero-visual">
-            <div className="hero-avatar-ring">
+            <TiltCard className="hero-avatar-ring" intensity={25}>
               <div className="hero-avatar">
-                <img src={avatarImg} alt="Muthamizh Selvan - AI Developer" />
+                <img src="/avatar.png" alt="Muthamizh Selvan - AI Developer" />
               </div>
 
               <TiltCard className="hero-badge hero-badge-1" intensity={12}>
@@ -616,9 +646,14 @@ function Hero() {
                   <div>Open to Work</div>
                 </div>
               </TiltCard>
-            </div>
+            </TiltCard>
           </div>
         </div>
+      </div>
+      {/* Scroll down indicator */}
+      <div className="scroll-indicator" onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}>
+        <span className="scroll-indicator-text">Scroll Down</span>
+        <ChevronUp size={20} className="scroll-indicator-arrow" style={{ transform: 'rotate(180deg)' }} />
       </div>
     </section>
   );
@@ -657,13 +692,13 @@ function About() {
               <div className="divider" />
             </div>
             <p>
-              I am a Software Developer and Tech Coach based in <strong style={{ color: 'var(--accent-cyan)' }}>Tamil Nadu</strong>, currently working at <strong style={{ color: 'var(--accent-cyan)' }}>Technology Garage, Trichy</strong>. My role combines both development and mentorship, where I train students in modern technologies while also building practical applications.
+              I am a Software Developer and Tech Coach based in <strong style={{ color: '#ffffff' }}>Tamil Nadu</strong>, currently working at <strong style={{ color: '#ffffff' }}>Technology Garage, Trichy</strong>. My role combines both development and mentorship, where I train students in modern technologies while also building practical applications.
             </p>
             <p>
-              My journey started with web development and system administration, and over time I transitioned into AI-focused systems. I now work with <strong style={{ color: 'var(--accent-purple)' }}>LLMs, RAG architectures</strong>, and tools like <strong style={{ color: 'var(--accent-purple)' }}>LangChain and LangGraph</strong> to build intelligent applications.
+              My journey started with web development and system administration, and over time I transitioned into AI-focused systems. I now work with <strong style={{ color: '#888888' }}>LLMs, RAG architectures</strong>, and tools like <strong style={{ color: '#888888' }}>LangChain and LangGraph</strong> to build intelligent applications.
             </p>
             <div className="about-highlight">
-              <Lightbulb size={18} style={{ flexShrink: 0, color: 'var(--accent-cyan)', marginRight: '12px' }} />
+              <Lightbulb size={18} style={{ flexShrink: 0, color: '#ffffff', marginRight: '12px' }} />
               <span>I enjoy breaking down complex concepts and helping others learn by building real projects. My focus is always on practical implementation rather than just theory.</span>
             </div>
             <p>
@@ -693,7 +728,7 @@ function Skills() {
   const [hoveredSkill, setHoveredSkill] = useState(null);
 
   return (
-    <section className="section" id="skills" style={{ background: 'linear-gradient(180deg, transparent, rgba(0,212,255,0.02) 50%, transparent)' }}>
+    <section className="section" id="skills" style={{ background: 'linear-gradient(180deg, transparent, transparent 50%, transparent)' }}>
       <div className="container">
         <div className="section-header reveal">
           <p className="section-label">
@@ -702,7 +737,7 @@ function Skills() {
           <h2 className="section-title">Tech Stack</h2>
           <div className="divider" />
           <p className="section-subtitle">
-            Technologies and tools I use to bring ideas to life. <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Hover to explore →</span>
+            Technologies and tools I use to bring ideas to life. <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Hover to explore â†’</span>
           </p>
         </div>
         <div className="skills-grid">
@@ -727,7 +762,7 @@ function Skills() {
                     onMouseEnter={() => setHoveredSkill(item)}
                     onMouseLeave={() => setHoveredSkill(null)}
                   >
-                    <span className="skill-item-dot" style={{ background: cat.dotColor }} />
+                    <TechBadge name={item} />
                     {item}
                     {hoveredSkill === item && <Sparkles size={12} className="skill-sparkle" />}
                   </span>
@@ -794,7 +829,7 @@ function Experience() {
                   <ul className="exp-achievements">
                     {exp.achievements.map((a, j) => (
                       <li key={j} style={{ animationDelay: `${j * 0.08}s` }}>
-                        <CheckCircle2 size={14} style={{ color: 'var(--accent-cyan)', flexShrink: 0, marginTop: '3px' }} />
+                        <CheckCircle2 size={14} style={{ color: '#ffffff', flexShrink: 0, marginTop: '3px' }} />
                         <span>{a}</span>
                       </li>
                     ))}
@@ -812,7 +847,7 @@ function Experience() {
 /* ─── Projects ─── */
 function Projects() {
   return (
-    <section className="section" id="projects" style={{ background: 'linear-gradient(180deg, transparent, rgba(168,85,247,0.02) 50%, transparent)' }}>
+    <section className="section" id="projects" style={{ background: 'linear-gradient(180deg, transparent, transparent 50%, transparent)' }}>
       <div className="container">
         <div className="section-header reveal">
           <p className="section-label">
@@ -909,15 +944,15 @@ function Education() {
               </div>
               <div className="edu-highlights">
                 <div className="edu-highlight">
-                  <Award size={14} style={{ color: 'var(--accent-purple)', flexShrink: 0 }} />
+                  <Award size={14} style={{ color: '#888888', flexShrink: 0 }} />
                   Technical Lead – Department Website
                 </div>
                 <div className="edu-highlight">
-                  <Target size={14} style={{ color: 'var(--accent-purple)', flexShrink: 0 }} />
+                  <Target size={14} style={{ color: '#888888', flexShrink: 0 }} />
                   Active in development and technical activities
                 </div>
                 <div className="edu-highlight">
-                  <Code size={14} style={{ color: 'var(--accent-purple)', flexShrink: 0 }} />
+                  <Code size={14} style={{ color: '#888888', flexShrink: 0 }} />
                   Specialized in fullstack & system administration
                 </div>
               </div>
@@ -975,7 +1010,7 @@ function NowAndPhilosophy() {
   ];
 
   return (
-    <section className="section" style={{ background: 'linear-gradient(180deg, transparent, rgba(0,212,255,0.02) 50%, transparent)' }}>
+    <section className="section" style={{ background: 'linear-gradient(180deg, transparent, transparent 50%, transparent)' }}>
       <div className="container">
         {/* Currently */}
         <div className="section-header reveal">
@@ -993,7 +1028,7 @@ function NowAndPhilosophy() {
                 Active
               </div>
               <div className="current-title">
-                <card.Icon size={20} style={{ color: 'var(--accent-cyan)', verticalAlign: 'middle', marginRight: '8px' }} />
+                <card.Icon size={20} style={{ color: '#ffffff', verticalAlign: 'middle', marginRight: '8px' }} />
                 {card.title}
               </div>
               <div className="current-items">
@@ -1011,7 +1046,7 @@ function NowAndPhilosophy() {
         {/* Philosophy */}
         <div style={{ marginTop: '80px' }} className="reveal">
           <div className="philosophy-block card">
-            <p style={{ color: 'var(--accent-purple)', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+            <p style={{ color: '#888888', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
               <Lightbulb size={16} /> My Philosophy
             </p>
             <p className="philosophy-quote">
@@ -1020,7 +1055,7 @@ function NowAndPhilosophy() {
             </p>
             <div className="divider" style={{ margin: '0 auto' }} />
             <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '16px' }}>
-              — Muthamizh Selvan
+              - Muthamizh Selvan
             </p>
           </div>
         </div>
@@ -1126,7 +1161,7 @@ function Contact() {
                     <input
                       id="contact-name"
                       type="text"
-                      placeholder="John Doe"
+                      placeholder="Name"
                       required
                       value={form.name}
                       onFocus={() => setFocused('name')}
@@ -1198,9 +1233,9 @@ function Footer() {
           ))}
         </div>
         <p className="footer-text">
-          Designed & Built by <span>Muthamizh Selvan</span> &nbsp;·&nbsp;{' '}
+          Designed & Built by <span>Muthamizh Selvan</span> &nbsp;Â·&nbsp;{' '}
           <span style={{ fontFamily: 'var(--font-mono)' }}>&lt;MS /&gt;</span>
-          &nbsp;·&nbsp; {new Date().getFullYear()}
+          &nbsp;Â·&nbsp; {new Date().getFullYear()}
         </p>
       </div>
     </footer>
@@ -1228,14 +1263,54 @@ function ScrollTop() {
 }
 
 // ──────────────────────────────────────────────
+// SCROLL PROGRESS
+// ──────────────────────────────────────────────
+function ScrollProgress() {
+  const [width, setWidth] = useState(0);
+  useEffect(() => {
+    const handler = () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      setWidth(docHeight > 0 ? (scrollTop / docHeight) * 100 : 0);
+    };
+    window.addEventListener('scroll', handler, { passive: true });
+    return () => window.removeEventListener('scroll', handler);
+  }, []);
+  return <div className="scroll-progress" style={{ width: `${width}%` }} />;
+}
+
+// ──────────────────────────────────────────────
 // ROOT APP
 // ──────────────────────────────────────────────
 export default function App() {
   useReveal();
 
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), 
+      direction: 'vertical',
+      gestureDirection: 'vertical',
+      smooth: true,
+      mouseMultiplier: 1,
+      smoothTouch: false,
+      touchMultiplier: 2,
+      infinite: false,
+    });
+
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+
+    return () => lenis.destroy();
+  }, []);
+
   return (
     <div id="app-root">
       {/* Interactive backgrounds */}
+      <ScrollProgress />
       <Particles count={35} />
       <MouseGlow />
 
