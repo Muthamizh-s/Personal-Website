@@ -69,16 +69,26 @@
 
 .logo-text {
   font-family: var(--font-main);
-  font-weight: 800;
   font-size: 1.2rem;
-  color: #ffffff;
   letter-spacing: -0.5px;
 }
 
-.logo-dot {
-  color: #666666;
+.logo-text-mu {
+  font-weight: 900;
+  color: #ffffff;
 }
 
+.logo-text-tamizh {
+  font-weight: 300;
+  color: #888888;
+  font-style: italic;
+  letter-spacing: 0.5px;
+}
+
+.logo-dot {
+  color: #ffffff;
+  font-weight: 900;
+}
 
 .nav-links {
   display: flex;

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Lenis from 'lenis';
+import 'lenis/dist/lenis.css';
 import './App.css';
 
 import {
@@ -494,12 +495,12 @@ function Navbar() {
   return (
     <>
       <nav className={`navbar${scrolled ? ' scrolled' : ''}`}>
-        <div className="nav-logo" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+        <div className="nav-logo" onClick={() => window.__lenis?.scrollTo(0)}>
           <div className="logo-mark">
             <span className="logo-mark-m">M</span>
             <span className="logo-mark-s">S</span>
           </div>
-          <span className="logo-text">Muthamizh<span className="logo-dot">.</span></span>
+          <span className="logo-text"><span className="logo-text-mu">Mu</span><span className="logo-text-tamizh">tamizh</span><span className="logo-dot">.</span></span>
         </div>
 
         <ul className="nav-links">
@@ -651,7 +652,7 @@ function Hero() {
         </div>
       </div>
       {/* Scroll down indicator */}
-      <div className="scroll-indicator" onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}>
+      <div className="scroll-indicator" onClick={() => { const el = document.getElementById('about'); if (el) window.__lenis?.scrollTo(el, { offset: -80 }); }}>
         <span className="scroll-indicator-text">Scroll Down</span>
         <ChevronUp size={20} className="scroll-indicator-arrow" style={{ transform: 'rotate(180deg)' }} />
       </div>
@@ -1233,9 +1234,9 @@ function Footer() {
           ))}
         </div>
         <p className="footer-text">
-          Designed & Built by <span>Muthamizh Selvan</span> &nbsp;Â·&nbsp;{' '}
-          <span style={{ fontFamily: 'var(--font-mono)' }}>&lt;MS /&gt;</span>
-          &nbsp;Â·&nbsp; {new Date().getFullYear()}
+          Designed & Built by <span>Muthamizh Selvan</span> &nbsp;&nbsp;{' '}
+          <span style={{ fontFamily: 'var(--font-mono)' }}>&lt;MS/ &gt;</span>
+          &nbsp;  &nbsp; {new Date().getFullYear()}
         </p>
       </div>
     </footer>
@@ -1253,7 +1254,7 @@ function ScrollTop() {
   return (
     <MagneticBtn
       className={`scroll-top-btn${visible ? ' visible' : ''}`}
-      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      onClick={() => window.__lenis?.scrollTo(0)}
       aria-label="Scroll to top"
       id="scroll-to-top"
     >
@@ -1288,15 +1289,15 @@ export default function App() {
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), 
-      direction: 'vertical',
-      gestureDirection: 'vertical',
-      smooth: true,
-      mouseMultiplier: 1,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      wheelMultiplier: 1,
       smoothTouch: false,
       touchMultiplier: 2,
-      infinite: false,
     });
+
+    // Store on window so other components can use lenis.scrollTo()
+    window.__lenis = lenis;
 
     function raf(time) {
       lenis.raf(time);
@@ -1304,7 +1305,25 @@ export default function App() {
     }
     requestAnimationFrame(raf);
 
-    return () => lenis.destroy();
+    // Intercept anchor clicks so they use Lenis smooth scroll
+    const handleAnchorClick = (e) => {
+      const anchor = e.target.closest('a[href^="#"]');
+      if (!anchor) return;
+      const hash = anchor.getAttribute('href');
+      if (!hash || hash === '#') return;
+      const target = document.querySelector(hash);
+      if (target) {
+        e.preventDefault();
+        lenis.scrollTo(target, { offset: -80 });
+      }
+    };
+    document.addEventListener('click', handleAnchorClick);
+
+    return () => {
+      document.removeEventListener('click', handleAnchorClick);
+      lenis.destroy();
+      delete window.__lenis;
+    };
   }, []);
 
   return (
